@@ -112,8 +112,6 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         // Combine the rotation matrix with the projection and camera view
         Matrix.multiplyMM(mMVPMatrix, 0, mRotationMatrix, 0, mMVPMatrix, 0);
 
-      
-        
         // Draw triangle
         mTriangle.draw(mMVPMatrix);
         mSquare.draw(mMVPMatrix);

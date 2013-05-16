@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 
 import android.app.Activity;
 import android.content.Context;
+import android.opengl.Matrix;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -47,15 +48,15 @@ public class DisplayMessageActivity extends Activity implements SensorEventListe
 	private float timestamp;
 	float[] deltaRotationMatrix = new float[9];
 
-	float[] axisA = new float[]{0,0,1};
+	float[] axisA = new float[] { 0, 0, 1, 0 };
 	float[] axisG = null;// new float [3];
 
 	long ct = 0;
-	float[] oldPos = new float[]{0,0,1};
-	float[] newPos = new float[]{0,0,1};
-	
-	//weight for gryo and accelometer;
-	float gWeight = 5.0f;
+	float[] oldPos = new float[] { 0, 0, 1, 0 };
+	float[] newPos = new float[] { 0, 0, 1, 0 };
+
+	// weight for gryo and accelometer;
+	float gWeight = 10.0f;
 	float aWeight = 1.0f;
 
 	@Override
@@ -65,7 +66,7 @@ public class DisplayMessageActivity extends Activity implements SensorEventListe
 		// confg the log;
 		LogConfigurator logConfigurator = new LogConfigurator();
 		logConfigurator.setFileName(Environment.getExternalStorageDirectory() + File.separator + "MyApp" + File.separator + "logs" + File.separator + "TestGyro.txt");
-		logConfigurator.setRootLevel(Level.DEBUG);
+		logConfigurator.setRootLevel(Level.ERROR);
 		logConfigurator.setLevel("org.apache", Level.ERROR);
 		// logConfigurator.setFilePattern("%d %-5p [%c{2}]-[%L] %m%n");
 		logConfigurator.setFilePattern("%d %-5p  %m%n");
@@ -84,12 +85,12 @@ public class DisplayMessageActivity extends Activity implements SensorEventListe
 		for (Sensor s : typedSensors) {
 			System.out.println(s.getType() + " | " + s.getVendor() + " | " + s.getVersion());
 			if (Sensor.TYPE_ACCELEROMETER == s.getType() || Sensor.TYPE_GYROSCOPE == s.getType()) {
-				sm.registerListener(this, s, SensorManager.SENSOR_DELAY_FASTEST); // Rates:
-																					// SENSOR_DELAY_FASTEST,
-																					// SENSOR_DELAY_GAME,
-																					// //
-																					// SENSOR_DELAY_NORMAL,
-																					// SENSOR_DELAY_UI
+				sm.registerListener(this, s, SensorManager.SENSOR_DELAY_GAME); // Rates:
+																				// SENSOR_DELAY_FASTEST,
+																				// SENSOR_DELAY_GAME,
+																				// //
+																				// SENSOR_DELAY_NORMAL,
+																				// SENSOR_DELAY_UI
 			}
 		}
 		// Create a GLSurfaceView instance and set it
@@ -126,50 +127,23 @@ public class DisplayMessageActivity extends Activity implements SensorEventListe
 
 	@Override
 	public void onSensorChanged(SensorEvent event) {
-		if (timestamp == 0){
+		if (timestamp == 0) {
 			timestamp = event.timestamp;
 		}
-		float [] axisG = new float[3];
+		float[] axisG = new float[4];
 		ct++;
 		if (Sensor.TYPE_GYROSCOPE == event.sensor.getType()) {
 
-			// This timestep's delta rotation to be multiplied by the current
-			// rotation
-			// after computing it from the gyro sample data.
-
-			// Axis of the rotation sample, not normalized yet.
-			float axisX = event.values[0];
-			float axisY = event.values[1];
-			float axisZ = event.values[2];
-
-			// Calculate the angular speed of the sample
-			float omegaMagnitude = FloatMath.sqrt(axisX * axisX + axisY * axisY + axisZ * axisZ);
-			if (omegaMagnitude > 0.02) {
-				axisG[0] = axisX;
-				axisG[1] = axisY;
-				axisG[2] = axisZ;
-			}
-			// Normalize the rotation vector if it's big enough to get the
-			// axis
-
-			// }
-
-			// SensorManager.getRotationMatrixFromVector(deltaRotationMatrix,
-			// deltaRotationVector);
-			// User code should concatenate the delta rotation we computed with
-			// the current rotation
-			// in order to get the updated rotation.
-			// rotationCurrent = rotationCurrent * deltaRotationMatrix;
+			axisG[0] = event.values[0];
+			axisG[1] = event.values[1];
+			axisG[2] = event.values[2];
 
 		} else if (Sensor.TYPE_ACCELEROMETER == event.sensor.getType()) {
-			
-			if (magnitudeSq(event.values) < 15*15)
-			{
-				axisA[0] = event.values[0];
-				axisA[1] = event.values[1];
-				axisA[2] = event.values[2];
-				
-			}
+
+			axisA[0] = event.values[0];
+			axisA[1] = event.values[1];
+			axisA[2] = event.values[2];
+
 		}
 		// if (ct%100 == 0)textView.setText(ct+"");
 
@@ -188,13 +162,11 @@ public class DisplayMessageActivity extends Activity implements SensorEventListe
 			oldPos[2] = newPos[2];
 		}
 
-		float dt = (event.timestamp - timestamp) * NS2S;
-		// assign the new position, "newPos" is shared by another thread;
-		{
+		
+		//Only fuse when has gryo event, if acc only, gyro value is missing.
+		if (Sensor.TYPE_GYROSCOPE == event.sensor.getType()) {
+			float dt = (event.timestamp - timestamp) * NS2S;
 			fuse(newPos, oldPos, axisG, axisA, dt);
-		}
-
-		if (Sensor.TYPE_GYROSCOPE == event.sensor.getType()){
 			timestamp = event.timestamp;
 		}
 
@@ -209,45 +181,43 @@ public class DisplayMessageActivity extends Activity implements SensorEventListe
 	 * @param axisA
 	 * @param dt
 	 */
-	 public  void fuse(float[] newPos, float[] oldPos, float[] gyroOrg, float[] accelometerOrg, float dt) {
+	float [] mTrans = new float [16];
+	float [] gyroRotationMatrix = new float [16];
+	float [] gyroNewPos = new float [4];
+	float [] acc = new float[4];
+	
+	public void fuse(float[] newPos, float[] oldPos, float[] gyroOrg, float[] accelometerOrg, float dt) {
 		// fuse by d0;
 		// d0 for gyro;
-		float[] acc = cloneFloatArray(accelometerOrg);
-		log.debug("\noldPos " + oldPos[0] + "|" + oldPos[1] + "|" + oldPos[2] + "  \naccelometerOrg " + accelometerOrg[0] + "|" + accelometerOrg[1] + "|" + accelometerOrg[2]
-				+ "\ngyroOrg " + gyroOrg[0] + "|" + gyroOrg[1] + "|" + gyroOrg[2]);
-		mul(-1*dt, gyroOrg);
-		float[] d_ct_g = gyroOrg;
-		// d0 for accelometer;
+		copyFloatArray(accelometerOrg, acc);
+		log.debug("\noldPos " + oldPos[0] + "|" + oldPos[1] + "|" + oldPos[2] + 
+				"\naccelometerOrg " + accelometerOrg[0] + "|" + accelometerOrg[1] + "|" + accelometerOrg[2] + 
+				"\ngyroOrg " + gyroOrg[0] + "|" + gyroOrg[1] + "|" + gyroOrg[2]);
+		
+		//get gyro matix and rotate old pos;
+		GyroUtil.getRotationMatrix(gyroOrg, dt, gyroRotationMatrix);
+		//transport it for opengl es; 
+		/* why I don't need to transpose it anymore?  */
+		//Matrix.transposeM(mTrans, 0, gyroRotationMatrix, 0);
+		mTrans = gyroRotationMatrix;
+		
+		//apply it to the oldPos
+		Matrix.multiplyMV(gyroNewPos, 0, mTrans, 0, oldPos, 0);
+		normalize(gyroNewPos);
+		//mow gyroNewPos is what the gyro estimated.	
 		normalize(acc);
-
-		// d0 = Ko X (Ka-Ko)
-		float[] oldPosNeg = cloneFloatArray(oldPos);
-		mul(-1, oldPosNeg);
-		add(acc, oldPosNeg);
-
-		float[] d_ct_a = new float[3];
-		float[] tempOldPos = cloneFloatArray(oldPos);
-		cross(tempOldPos, acc, d_ct_a);
-
-		log.debug("d_ct_g " + d_ct_g[0] + "|" + d_ct_g[1] + "|" + d_ct_g[2] + "  d_ct_a " + d_ct_a[0] + "|" + d_ct_a[1] + "|" + d_ct_a[2]);
-
 		
+		log.debug("fuse: gyroNewPos " + gyroNewPos[0] + "|" + gyroNewPos[1] + "|" + gyroNewPos[2] + "  acc " + acc[0] + "|" + acc[1] + "|" + acc[2]);
 
-		mul(gWeight, d_ct_g);
-		mul(aWeight, d_ct_a);
-		add(d_ct_a, d_ct_g);
-		mul(1.0f / (aWeight + gWeight), d_ct_a);
+		mul(gWeight, gyroNewPos);
+		mul(aWeight, acc);
+		add(gyroNewPos, acc);
+		mul(1.0f / (aWeight + gWeight), gyroNewPos);
 
-		float[] d_ct = d_ct_a;
-		log.debug("d_ct " + d_ct[0] + "|" + d_ct[1] + "|" + d_ct[2]);
-
-		float[] dtCross = new float[3];
-		cross(d_ct, oldPos, dtCross);
+		normalize(gyroNewPos);
 		
+		copyFloatArray(gyroNewPos, newPos);
 		
-		add(newPos, dtCross);
-		normalize(newPos);
-		// Accelo only;
 
 	}
 }

@@ -15,7 +15,15 @@ public class VecUtil {
 			res[i] = v[i];
 		return res;
 	}
-
+	
+	public static void copyFloatArray(float[] from, float [] to) {
+		if (from == null) return;
+		for (int i = 0; i < to.length; i++)
+			to[i] = from[i];
+		
+	}
+	
+	
 	public static void add(float[] v1, float[] v2) {
 		
 		for (int i = 0; i < v1.length; i++)
