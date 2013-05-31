@@ -26,6 +26,10 @@ package com.qdapps.quard;
 import static com.bulletphysics.demos.opengl.IGL.GL_COLOR_BUFFER_BIT;
 import static com.bulletphysics.demos.opengl.IGL.GL_DEPTH_BUFFER_BIT;
 
+import java.util.Hashtable;
+import java.util.Map;
+
+import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
 import org.lwjgl.LWJGLException;
@@ -37,16 +41,17 @@ import com.bulletphysics.collision.dispatch.DefaultCollisionConfiguration;
 import com.bulletphysics.collision.shapes.BoxShape;
 import com.bulletphysics.collision.shapes.CollisionShape;
 import com.bulletphysics.collision.shapes.CompoundShape;
-import com.bulletphysics.collision.shapes.StaticPlaneShape;
 import com.bulletphysics.demos.opengl.DemoApplication;
 import com.bulletphysics.demos.opengl.GLDebugDrawer;
 import com.bulletphysics.demos.opengl.IGL;
 import com.bulletphysics.demos.opengl.LWJGL;
 import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
+import com.bulletphysics.dynamics.InternalTickCallback;
 import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
 import com.bulletphysics.dynamics.constraintsolver.ConstraintSolver;
 import com.bulletphysics.dynamics.constraintsolver.SequentialImpulseConstraintSolver;
+import com.bulletphysics.linearmath.DebugDrawModes;
 import com.bulletphysics.linearmath.DefaultMotionState;
 import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.util.ObjectArrayList;
@@ -80,6 +85,7 @@ public class Qurad extends DemoApplication {
 
 	public Qurad(IGL gl) {
 		super(gl);
+		//this.debugMode=this.debugMode|DebugDrawModes.DRAW_WIREFRAME;
 		
 	}
 
@@ -270,6 +276,10 @@ public class Qurad extends DemoApplication {
 		dynamicsWorld.addRigidBody(body);
 		body.setActivationState(RigidBody.ISLAND_SLEEPING);
 
+		Map<String, Object> worldUserInfo = new Hashtable<String, Object>();
+		worldUserInfo.put("Q",body);
+		InternalTickCallback cb = new MyTickCallBack();
+		dynamicsWorld.setInternalTickCallback(cb , worldUserInfo );
 		clientResetScene();
 	}
 
@@ -279,7 +289,7 @@ public class Qurad extends DemoApplication {
 		lt.setIdentity();
 		
 		float armLength = .2f;
-		float roterSize = 0.05f;
+		float roterSize = 0.06f;
 		float [][] transform = new float [][]{{1,0},{-1,0},{0,1},{0,-1}};
 		for (int i = 0 ; i<4; i++){
 			lt.origin.set(transform[i][0]* armLength, 0, transform[i][1]* armLength);
@@ -303,7 +313,44 @@ public class Qurad extends DemoApplication {
 		ccdDemo.getDynamicsWorld().setDebugDrawer(
 				new GLDebugDrawer(LWJGL.getGL()));
 
-		LWJGL.main(args, 1900, 1000, "Bullet Physics Demo. http://bullet.sf.net",ccdDemo);
+		LWJGL.main(args, 1300, 800, "Bullet Physics Demo. http://bullet.sf.net",ccdDemo);
 	}
 
+	
+	public void shootBox(Vector3f destination) {
+		if (dynamicsWorld != null) {
+			float mass = 0.01f;
+			Transform startTransform = new Transform();
+			startTransform.setIdentity();
+			Vector3f camPos = new Vector3f(getCameraPosition());
+			startTransform.origin.set(camPos);
+
+			if (shootBoxShape == null) {
+				//#define TEST_UNIFORM_SCALING_SHAPE 1
+				//#ifdef TEST_UNIFORM_SCALING_SHAPE
+				//btConvexShape* childShape = new btBoxShape(btVector3(1.f,1.f,1.f));
+				//m_shootBoxShape = new btUniformScalingShape(childShape,0.5f);
+				//#else
+				shootBoxShape = new BoxShape(new Vector3f(.1f, .1f, .1f));
+				//#endif//
+			}
+
+			RigidBody body = this.localCreateRigidBody(mass, startTransform, shootBoxShape);
+
+			Vector3f linVel = new Vector3f(destination.x - camPos.x, destination.y - camPos.y, destination.z - camPos.z);
+			linVel.normalize();
+			linVel.scale(20);
+
+			Transform worldTrans = body.getWorldTransform(new Transform());
+			worldTrans.origin.set(camPos);
+			worldTrans.setRotation(new Quat4f(0f, 0f, 0f, 1f));
+			body.setWorldTransform(worldTrans);
+			
+			body.setLinearVelocity(linVel);
+			body.setAngularVelocity(new Vector3f(0f, 0f, 0f));
+
+			body.setCcdMotionThreshold(1f);
+			body.setCcdSweptSphereRadius(0.2f);
+		}
+	}
 }
