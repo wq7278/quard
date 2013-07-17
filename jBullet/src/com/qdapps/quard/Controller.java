@@ -3,8 +3,16 @@ package com.qdapps.quard;
 public abstract class Controller {
 	abstract public void init();
 	abstract public Command nextCommand(Status status, long time);
-	abstract public Goal setGoad(Goal[] g);
+	abstract public void setGoad(Goal[] g);
 	abstract public Goal [] getRootGoal();	
 	
-	private Goal [] rootGoal;
+	protected Goal [] goal;
+	private Goal currentGoal;
+	
+	public Goal getCurrentGoal() {
+		return currentGoal;
+	}
+	public void setCurrentGoal(Goal currentGoal) {
+		this.currentGoal = currentGoal;
+	}
 }
