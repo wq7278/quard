@@ -1,5 +1,7 @@
 package com.qdapps.quard;
 
+import java.util.LinkedList;
+
 /**
  * This is run in the sofware simulated evn;
  * @author qwang
@@ -10,13 +12,27 @@ public class SimulationController extends Controller {
 	@Override
 	public void init() {
 		//Check every thing;
+		
+		//Get current status;
+		Status current = new Status();
+		
 		//set a current goal;
+		Goal g = new Goal();
+		this.getMaingoal().add(g);
+		
+		//slic the goal to subGoals;
+		Slicer s = null;
+		
+		
+		LinkedList<Goal> goals = s.slice (current, g);
+		this.getGoalList().addAll(goals);
+		
 	}
 
 	@Override
 	public Command nextCommand(Status status, long time) {
 		Command cmd = null;
-		Goal currentGoal = this.getCurrentGoal();
+		Goal currentGoal = this.getNextGoal();
 		Status expectedStatus = currentGoal.getTargetStatus();
 		// is the status to far? abandon; reslice the parent goal;
 		if (tooFar(status, expectedStatus)){
@@ -33,8 +49,8 @@ public class SimulationController extends Controller {
 	 * @return
 	 */
 	private Goal getNextGoal() {
-		
-		return null;
+		Goal g = this.getGoalList().poll();
+		return g;
 	}
 
 	/**
@@ -61,14 +77,16 @@ public class SimulationController extends Controller {
 
 	@Override
 	public void setGoad(Goal[] g) {
-		this.goal = g;
-		return;
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public Goal[] getRootGoal() {
-		
-		return this.goal;
+		// TODO Auto-generated method stub
+		return null;
 	}
+
+	
 
 }
