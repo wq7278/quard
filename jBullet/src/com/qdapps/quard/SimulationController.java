@@ -21,10 +21,11 @@ public class SimulationController extends Controller {
 		this.getMaingoal().add(g);
 		
 		//slic the goal to subGoals;
-		Slicer s = null;
 		
+		Slicer slicer = null;
+		this.setSlicer(slicer );
 		
-		LinkedList<Goal> goals = s.slice (current, g);
+		LinkedList<Goal> goals = slicer.slice (current, g);
 		this.getGoalList().addAll(goals);
 		
 	}
@@ -39,13 +40,27 @@ public class SimulationController extends Controller {
 			
 		}else{
 			Goal nextGoal = getNextGoal();
+			if (nextGoal == null){
+				//find next goal in goal list;
+				Goal next = this.getMaingoal().poll();
+				if (next == null){
+					//If at the end of goal list; just use this current goal;
+					next = currentGoal.getParentGoal();
+					
+				}
+				
+				LinkedList<Goal> goalList = getSlicer().slice(status, nextGoal);
+				
+				this.getGoalList().addAll(goalList);
+				nextGoal = getNextGoal();
+			}
 			cmd = gnerateCommand(status, nextGoal);
 		}
 		return cmd;
 	}
 
 	/**
-	 * find out what the next goal should be, if there is nothing, hovering;
+	 * find out what the next goal should be;
 	 * @return
 	 */
 	private Goal getNextGoal() {

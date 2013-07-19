@@ -11,7 +11,14 @@ public abstract class Controller {
 	
 	private LinkedList<Goal> maingoal = new LinkedList<>();
 	private LinkedList<Goal> goalList = new LinkedList<>();
+	private Slicer slicer;
 	
+	public Slicer getSlicer() {
+		return slicer;
+	}
+	public void setSlicer(Slicer slicer) {
+		this.slicer = slicer;
+	}
 	public LinkedList<Goal> getMaingoal() {
 		return maingoal;
 	}
@@ -24,6 +31,8 @@ public abstract class Controller {
 //	public void setGoalList(List<Goal> goalList) {
 //		this.goalList = goalList;
 //	}
+	
+
 	
 	
 }
