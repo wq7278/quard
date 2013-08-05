@@ -1,6 +1,7 @@
 package com.qdapps.quard.model;
 
 import com.qdapps.quard.model.controller.Controller;
+import com.qdapps.quard.model.controller.SimulationController;
 
 public class Quard {
 
@@ -23,9 +24,18 @@ public class Quard {
 
 	public void startUp(){
 		
-		this.setController(controller);
+		//Start up the quard, init status; etc..
+		
+		Controller simcontroller = new SimulationController();
+		
+		this.setController(simcontroller );
 		controller.init();
 		
+	}
+	
+	public void executeComand(Command cmd) {
+		//after a command is back ,excute it;
+		//this should be assigned to the controller, the controller shoudl know how to do this;
 	}
 	
 	

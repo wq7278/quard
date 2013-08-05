@@ -55,6 +55,8 @@ import com.bulletphysics.linearmath.DebugDrawModes;
 import com.bulletphysics.linearmath.DefaultMotionState;
 import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.util.ObjectArrayList;
+import com.qdapps.quard.model.Quard;
+import com.qdapps.quard.model.controller.SimulationController;
 
 /**
  * BasicDemo is good starting point for learning the code base and porting.
@@ -277,10 +279,20 @@ public class QuradSim extends DemoApplication {
 		body.setActivationState(RigidBody.ISLAND_SLEEPING);
 
 		Map<String, Object> worldUserInfo = new Hashtable<String, Object>();
+	
+		//pass this to the user infor, can be get back on the call back method. 
 		worldUserInfo.put("Q",body);
+		//create the Quard object here;
+		Quard qd = new Quard();
+		worldUserInfo.put("QD",qd);
+		qd.setController(new SimulationController());
+		
 		InternalTickCallback cb = new MyTickCallBack();
 		dynamicsWorld.setInternalTickCallback(cb , worldUserInfo );
 		clientResetScene();
+		
+		
+		
 	}
 
 	private CompoundShape createTheQuardShape() {

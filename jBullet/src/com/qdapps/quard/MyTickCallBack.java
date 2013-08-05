@@ -12,6 +12,9 @@ import com.bulletphysics.dynamics.DynamicsWorld;
 import com.bulletphysics.dynamics.InternalTickCallback;
 import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.linearmath.Transform;
+import com.qdapps.quard.model.Command;
+import com.qdapps.quard.model.Quard;
+import com.qdapps.quard.model.Status;
 
 public class MyTickCallBack extends InternalTickCallback {
 
@@ -19,18 +22,18 @@ public class MyTickCallBack extends InternalTickCallback {
 	public void internalTick(DynamicsWorld world, float timeStep) {
 		//System.out.println("Call: " + timeStep);
 		Map<String, Object> m = (Map<String, Object>)world.getWorldUserInfo();
-		RigidBody quard = (RigidBody) m.get("Q");
-		quard.setActivationState(CollisionObject.DISABLE_DEACTIVATION);
+		RigidBody quardBody = (RigidBody) m.get("Q");
+		quardBody.setActivationState(CollisionObject.DISABLE_DEACTIVATION);
 		
 		Vector3f agVelocity = new Vector3f();
-		quard.getAngularVelocity(agVelocity);
+		quardBody.getAngularVelocity(agVelocity);
 		System.out.println("getAngularVelocity: " + agVelocity.x +" | " + agVelocity.y +" | " + agVelocity.z);
 		
 		Vector3f velocity = new Vector3f();
-		quard.getVelocityInLocalPoint(new Vector3f(), velocity);
+		quardBody.getVelocityInLocalPoint(new Vector3f(), velocity);
 		
 		Transform trans = new Transform();
-		quard.getCenterOfMassTransform(trans);
+		quardBody.getCenterOfMassTransform(trans);
 		
 //		Quat4f rotation = new Quat4f();
 //		trans.getRotation(rotation );
@@ -41,13 +44,13 @@ public class MyTickCallBack extends InternalTickCallback {
 		trans.transform(force);
 		
 		Vector3f centerOfmass = new Vector3f();
-		quard.getCenterOfMassPosition(centerOfmass );
+		quardBody.getCenterOfMassPosition(centerOfmass );
 		
 		force.sub(centerOfmass);
 		float [] scale = new float[4];
 		
 		//caculate the scale: 
-		calculate (scale, quard, timeStep); 
+		calculate (scale, quardBody, timeStep); 
 		
 		Vector3f []  f = new Vector3f[4];
 		for (int i = 0; i < f.length; i++) {
@@ -64,10 +67,23 @@ public class MyTickCallBack extends InternalTickCallback {
 		float [][] transform = new float [][]{{1,0},{-1,0},{0,1},{0,-1}};
 		float armLength = .2f;
 		for (int i = 0 ; i<4; i++){
-			quard.applyForce(f[i], new Vector3f(transform[i][0]* armLength, 0, transform[i][1]* armLength) );
+			quardBody.applyForce(f[i], new Vector3f(transform[i][0]* armLength, 0, transform[i][1]* armLength) );
 		}
 		
 		
+		//get the quard, all the status of it is updated to status;
+		//then look at the command to decide what to do next;
+		Quard quard =  (Quard) m.get("QD");
+		Status status = new Status();
+		status.setPos(centerOfmass);
+		status.setW(agVelocity);
+		status.setV(velocity);
+		//status.setN(n);
+		//status.setU(u);
+		Command cmd = quard.getController().nextCommand(status, (long)timeStep*1000);
+		quard.executeComand(cmd);
+		
+		//
 		
 	}
 

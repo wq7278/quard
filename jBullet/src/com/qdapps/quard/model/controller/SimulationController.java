@@ -39,6 +39,10 @@ public class SimulationController extends Controller {
 	public Command nextCommand(Status status, long time) {
 		Command cmd = null;
 		Goal currentGoal = this.getNextGoal();
+		
+		//If there is no goal comming back; don't do anything;
+		
+		
 		Status expectedStatus = currentGoal.getTargetStatus();
 		// is the status to far? abandon; reslice the parent goal;
 		if (tooFar(status, expectedStatus)){
