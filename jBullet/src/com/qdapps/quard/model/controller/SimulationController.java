@@ -5,7 +5,9 @@ import java.util.LinkedList;
 import com.qdapps.quard.model.Command;
 import com.qdapps.quard.model.Goal;
 import com.qdapps.quard.model.Status;
+import com.qdapps.quard.model.goal.StartUp;
 import com.qdapps.quard.model.slicer.Slicer;
+import com.qdapps.quard.model.slicer.SlicerImpl;
 
 /**
  * This is run in the sofware simulated evn;
@@ -22,12 +24,12 @@ public class SimulationController extends Controller {
 		Status current = new Status();
 		
 		//set a current goal;
-		Goal g = new Goal();
+		Goal g = new StartUp();
 		this.getMaingoal().add(g);
 		
 		//slic the goal to subGoals;
 		
-		Slicer slicer = null;
+		Slicer slicer =  new SlicerImpl();
 		this.setSlicer(slicer );
 		
 		LinkedList<Goal> goals = slicer.slice (current, g);
@@ -38,10 +40,10 @@ public class SimulationController extends Controller {
 	@Override
 	public Command nextCommand(Status status, long time) {
 		Command cmd = null;
-		Goal currentGoal = this.getNextGoal();
+		Goal currentGoal = this.getCurrentGoal();
 		
 		//If there is no goal comming back; don't do anything;
-		
+		if (currentGoal == null ) return null;
 		
 		Status expectedStatus = currentGoal.getTargetStatus();
 		// is the status to far? abandon; reslice the parent goal;
@@ -68,14 +70,7 @@ public class SimulationController extends Controller {
 		return cmd;
 	}
 
-	/**
-	 * find out what the next goal should be;
-	 * @return
-	 */
-	private Goal getNextGoal() {
-		Goal g = this.getGoalList().poll();
-		return g;
-	}
+	
 
 	/**
 	 * what is the difference between this goal and next? get a command;

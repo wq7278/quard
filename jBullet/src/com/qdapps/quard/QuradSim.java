@@ -286,6 +286,7 @@ public class QuradSim extends DemoApplication {
 		Quard qd = new Quard();
 		worldUserInfo.put("QD",qd);
 		qd.setController(new SimulationController());
+		qd.getController().init();
 		
 		InternalTickCallback cb = new MyTickCallBack();
 		dynamicsWorld.setInternalTickCallback(cb , worldUserInfo );

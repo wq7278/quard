@@ -18,6 +18,24 @@ public abstract class Controller {
 	private LinkedList<Goal> goalList = new LinkedList<>();
 	private Slicer slicer;
 	
+	
+	/**the goal is being working on;
+	 * @return
+	 */
+	public Goal getCurrentGoal() {
+		Goal currentGoal = this.getGoalList().peek();
+		return currentGoal;
+	}
+	
+	/**
+	 * find out what the next goal should be;
+	 * @return
+	 */
+	public Goal getNextGoal() {
+		Goal g = this.getGoalList().poll();
+		return g;
+	}
+	
 	public Slicer getSlicer() {
 		return slicer;
 	}
