@@ -19,16 +19,14 @@ public class SimulationController extends Controller {
 	@Override
 	public void init() {
 		//Check every thing;
-		
 		//Get current status;
 		Status current = new Status();
 		
-		//set a current goal;
-		Goal g = new StartUp();
+		//set a current goal; start all motors in 15 sec;
+		Goal g = new StartUp(15000);
 		this.getMaingoal().add(g);
 		
 		//slic the goal to subGoals;
-		
 		Slicer slicer =  new SlicerImpl();
 		this.setSlicer(slicer );
 		
@@ -47,7 +45,7 @@ public class SimulationController extends Controller {
 		
 		Status expectedStatus = currentGoal.getTargetStatus();
 		// is the status to far? abandon; reslice the parent goal;
-		if (tooFar(status, expectedStatus)){
+		if (currentGoal.tooFar(status)){
 			
 		}else{
 			Goal nextGoal = getNextGoal();
@@ -65,33 +63,9 @@ public class SimulationController extends Controller {
 				this.getGoalList().addAll(goalList);
 				nextGoal = getNextGoal();
 			}
-			cmd = gnerateCommand(status, nextGoal);
+			cmd = nextGoal.gnerateCommand(status);
 		}
 		return cmd;
-	}
-
-	
-
-	/**
-	 * what is the difference between this goal and next? get a command;
-	 * @param status
-	 * @param nextGoal
-	 * @return
-	 */
-	private Command gnerateCommand(Status status, Goal nextGoal) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/**
-	 * too far from goal, something is wrong, need to adjust;
-	 * @param status
-	 * @param expectedStatus
-	 * @return
-	 */
-	private boolean tooFar(Status status, Status expectedStatus) {
-		// TODO Auto-generated method stub
-		return false;
 	}
 
 	@Override

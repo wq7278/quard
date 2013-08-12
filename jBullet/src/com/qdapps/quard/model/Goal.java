@@ -1,9 +1,12 @@
 package com.qdapps.quard.model;
 
+import java.util.LinkedList;
 import java.util.List;
 
+import com.qdapps.quard.model.slicer.Slicer;
 
-public class Goal {
+
+public abstract class Goal {
 	
 	private List<Goal> subGoal; //If the goal is already sliced;
 	
@@ -53,4 +56,34 @@ public class Goal {
 	public void setParentGoal(Goal parentGoal) {
 		this.parentGoal = parentGoal;
 	}
+	
+	/**
+	 * Test if the status is too far from the goal; if yes, usually this get abandoned;
+	 * @param s
+	 * @return
+	 */
+	public abstract boolean tooFar(Status s);
+	
+	
+	/**
+	 * if this goal is done;
+	 * @param s
+	 * @return
+	 */
+	public abstract boolean acchived (Status s);
+
+	
+	/**self slice;
+	 * @param s
+	 * @return
+	 */
+	public abstract LinkedList<Goal> slice(Status s) ;
+
+	/**
+	 * generate the command try to achive the next goal;
+	 * @param status
+	 * @return
+	 */
+	public abstract Command gnerateCommand(Status status);
+
 }

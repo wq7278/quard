@@ -10,7 +10,9 @@ public class SlicerImpl implements Slicer  {
 	@Override
 	public LinkedList<Goal> slice(Status s, Goal g) {
 		
-		return null;
+		 LinkedList<Goal> goals = g.slice(s);
+		
+		return goals;
 	}
 
 }

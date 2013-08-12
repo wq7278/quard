@@ -1,5 +1,8 @@
 package com.qdapps.quard.model;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.vecmath.Vector3f;
 
 public class Status {
@@ -12,6 +15,8 @@ public class Status {
 	
 	private Vector3f pos; //glob position;
 
+	public Map<String, Object> statusMap = new HashMap<>();
+	
 	public Vector3f getU() {
 		return u;
 	}
