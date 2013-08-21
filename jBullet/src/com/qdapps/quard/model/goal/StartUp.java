@@ -55,23 +55,25 @@ public class StartUp extends Goal {
 		
 	}
 
+	boolean alreadySendStartUp = false;
 	@Override
 	public Command gnerateCommand(Status status) {
 		Command cmd = null;
-		boolean alreadySendStartUp = false;
-		if (alreadySendStartUp ){
-			cmd = null;
-			//collect status;
-		}else {
+		
+		if (!alreadySendStartUp ){
 			cmd = sendStartUpToMachine();
-			alreadySendStartUp = true;
+		}else {
+			cmd = null;
 		}
 		return cmd;
 	}
 
 	private Command sendStartUpToMachine() {
-		
-		return null;
+		Command cmd = new Command ();
+		cmd.cmd = new String[]{
+			"Start_Motors"
+		};
+		return cmd;
 	}
 	
 	

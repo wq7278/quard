@@ -25,12 +25,8 @@ public class SimulationController extends Controller {
 		//set a current goal; start all motors in 15 sec;
 		Goal g = new StartUp(15000);
 		this.getMaingoal().add(g);
-		
-		//slic the goal to subGoals;
-		Slicer slicer =  new SlicerImpl();
-		this.setSlicer(slicer );
-		
-		LinkedList<Goal> goals = slicer.slice (current, g);
+	 
+		LinkedList<Goal> goals = g.slice (current);
 		this.getGoalList().addAll(goals);
 		
 	}
@@ -46,40 +42,34 @@ public class SimulationController extends Controller {
 		Status expectedStatus = currentGoal.getTargetStatus();
 		// is the status to far? abandon; reslice the parent goal;
 		if (currentGoal.tooFar(status)){
-			
-		}else{
+			// this is where the goal should be abandoned. after that, see the main goal list, try next thing. 
+			// abandon, re-adjust;
+		} 
+		boolean achieved = currentGoal.acchived(status);
+		
+		long currentTime = System.currentTimeMillis(); 
+		if (achieved || currentTime > currentGoal.getEndTime()){
+			//need a new goal as current Goal;
 			Goal nextGoal = getNextGoal();
 			if (nextGoal == null){
-				//find next goal in goal list;
+				//find next goal in goal list; if null, look at the parent list to find the next goal to achieve;
 				Goal next = this.getMaingoal().poll();
 				if (next == null){
-					//If at the end of goal list; just use this current goal;
+					//If at the end of goal list; just use this current goal; 
+					//If this happened, go to a waiting stage;
 					next = currentGoal.getParentGoal();
-					
 				}
-				
-				LinkedList<Goal> goalList = getSlicer().slice(status, nextGoal);
-				
+				next.setStartTime(currentTime);
+				LinkedList<Goal> goalList = next.slice(status);
 				this.getGoalList().addAll(goalList);
 				nextGoal = getNextGoal();
 			}
-			cmd = nextGoal.gnerateCommand(status);
+			currentGoal = nextGoal;
 		}
+		
+		//Generate the command should be run;
+		cmd = currentGoal.gnerateCommand(status);
 		return cmd;
 	}
-
-	@Override
-	public void setGoad(Goal[] g) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public Goal[] getRootGoal() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	
 
 }

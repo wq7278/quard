@@ -11,12 +11,12 @@ import com.qdapps.quard.model.slicer.Slicer;
 public abstract class Controller {
 	abstract public void init();
 	abstract public Command nextCommand(Status status, long time);
-	abstract public void setGoad(Goal[] g);
-	abstract public Goal [] getRootGoal();	
+	//abstract public void setGoad(Goal[] g);
+	//abstract public Goal [] getRootGoal();	
 	
 	private LinkedList<Goal> maingoal = new LinkedList<>();
 	private LinkedList<Goal> goalList = new LinkedList<>();
-	private Slicer slicer;
+	//private Slicer slicer; //no need for slicer anymore, the goal slic it self;
 	
 	
 	/**the goal is being working on;
@@ -36,12 +36,12 @@ public abstract class Controller {
 		return g;
 	}
 	
-	public Slicer getSlicer() {
-		return slicer;
-	}
-	public void setSlicer(Slicer slicer) {
-		this.slicer = slicer;
-	}
+//	public Slicer getSlicer() {
+//		return slicer;
+//	}
+//	public void setSlicer(Slicer slicer) {
+//		this.slicer = slicer;
+//	}
 	public LinkedList<Goal> getMaingoal() {
 		return maingoal;
 	}
