@@ -62,6 +62,7 @@ public class StartUp extends Goal {
 		
 		if (!alreadySendStartUp ){
 			cmd = sendStartUpToMachine();
+			alreadySendStartUp = true;
 		}else {
 			cmd = null;
 		}

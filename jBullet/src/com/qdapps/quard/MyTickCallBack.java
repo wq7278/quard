@@ -6,6 +6,8 @@ import java.util.Map;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
+import org.apache.log4j.Logger;
+
 import com.bulletphysics.collision.dispatch.CollisionObject;
 import com.bulletphysics.collision.shapes.BoxShape;
 import com.bulletphysics.dynamics.DynamicsWorld;
@@ -18,16 +20,17 @@ import com.qdapps.quard.model.Status;
 
 public class MyTickCallBack extends InternalTickCallback {
 
+	private Logger log = Logger.getLogger(this.getClass());
 	@Override
 	public void internalTick(DynamicsWorld world, float timeStep) {
-		//System.out.println("Call: " + timeStep);
+		//log.debug("Call: " + timeStep);
 		Map<String, Object> m = (Map<String, Object>)world.getWorldUserInfo();
 		RigidBody quardBody = (RigidBody) m.get("Q");
 		quardBody.setActivationState(CollisionObject.DISABLE_DEACTIVATION);
 		
 		Vector3f agVelocity = new Vector3f();
 		quardBody.getAngularVelocity(agVelocity);
-		System.out.println("getAngularVelocity: " + agVelocity.x +" | " + agVelocity.y +" | " + agVelocity.z);
+		log.debug("getAngularVelocity: " + agVelocity.x +" | " + agVelocity.y +" | " + agVelocity.z);
 		
 		Vector3f velocity = new Vector3f();
 		quardBody.getVelocityInLocalPoint(new Vector3f(), velocity);
@@ -60,9 +63,9 @@ public class MyTickCallBack extends InternalTickCallback {
 		 
 		//f[3].scale(1.1f);
 		
-		System.out.println("force: " + force.x +" | " + force.y +" | " + force.z);
-		System.out.println("getAngularVelocity: " + agVelocity.x +" | " + agVelocity.y +" | " + agVelocity.z);
-		System.out.println("getVelocity: " + velocity.x +" | " + velocity.y +" | " + velocity.z);
+		log.debug("force: " + force.x +" | " + force.y +" | " + force.z);
+		log.debug("getAngularVelocity: " + agVelocity.x +" | " + agVelocity.y +" | " + agVelocity.z);
+		log.debug("getVelocity: " + velocity.x +" | " + velocity.y +" | " + velocity.z);
 		
 		float [][] transform = new float [][]{{1,0},{-1,0},{0,1},{0,-1}};
 		float armLength = .2f;
@@ -81,9 +84,12 @@ public class MyTickCallBack extends InternalTickCallback {
 		//status.setN(n);
 		//status.setU(u);
 		Command cmd = quard.getController().nextCommand(status, (long)timeStep*1000);
+		if (cmd!=null){
+			log.info("command: " + cmd.toString());
+		}else {
+			log.info("command is null;");
+		}
 		quard.executeComand(cmd);
-		
-		//
 		
 	}
 

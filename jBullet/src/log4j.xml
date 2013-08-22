@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+	<appender name="DEFAULT" class="org.apache.log4j.RollingFileAppender">
+		<param name="File" value="./main.log"/>
+		<param name="MaxFileSize" value="10240KB"/>
+		<param name="MaxBackupIndex" value="5"/>
+		<param name="Threshold" value="TRACE"/>
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d|%m%n"/>
+		</layout>
+	</appender>
+	
+	<logger name="com.qdapps">
+		<level value="INFO"/>
+		<appender-ref ref="DEFAULT"/>
+	</logger>
+</log4j:configuration>
