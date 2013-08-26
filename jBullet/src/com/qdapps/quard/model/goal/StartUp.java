@@ -2,12 +2,15 @@ package com.qdapps.quard.model.goal;
 
 import java.util.LinkedList;
 
+import org.apache.log4j.Logger;
+
 import com.qdapps.quard.model.Command;
 import com.qdapps.quard.model.Goal;
 import com.qdapps.quard.model.Status;
 
 public class StartUp extends Goal {
 	
+	private static Logger log = Logger.getLogger(StartUp.class);
 	public StartUp(long waitTime){
 		Status targetStatus = new Status();
 		this.setTargetStatus(targetStatus );
@@ -23,25 +26,37 @@ public class StartUp extends Goal {
 	}
 	
 	public boolean tooFar(Status s){
+		//this task will not be too far ever, it is a start up.
 	
-		if (System.currentTimeMillis() > this.getEndTime()){
-			return true;
-		}
+//		if (System.currentTimeMillis() > this.getEndTime()){
+//			return true;
+//		}
 		return false;
 	
 	}
 	
 	
 	public boolean acchived (Status s){
-		if (  "READY".equals( s.statusMap.get("Motor2") )
+		//if the time is up. consider it done; this is for the motors that don't have a way to find out the status;
+		boolean achived = false;
+		if (System.currentTimeMillis() > this.getEndTime()){
+			achived = true;
+		}
+		//test the status table if there is a way of finding out the motors status;
+		else if (  "READY".equals( s.statusMap.get("Motor2") )
 				&&  "READY".equals( s.statusMap.get("Motor1")) 
 				&& "READY".equals( s.statusMap.get("Motor3"))
 				&& "READY".equals( s.statusMap.get("Motor4"))
 			){
-			return true;
+			achived = true;
 		}else {
-			return false;
+			achived = false;
 		}
+		
+		if (achived){
+			log.info("Goad is achived: " + this.getClass().getName());
+		}
+		return achived;
 		
 	}
 
@@ -51,6 +66,8 @@ public class StartUp extends Goal {
 		//just return the goal as self;
 		LinkedList<Goal> gs = new LinkedList<>();
 		gs.add(this);
+		//set the parent;
+		this.setParentGoal(this);
 		return gs;
 		
 	}

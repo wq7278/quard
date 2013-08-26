@@ -2,6 +2,8 @@ package com.qdapps.quard.model.controller;
 
 import java.util.LinkedList;
 
+import org.apache.log4j.Logger;
+
 import com.qdapps.quard.model.Command;
 import com.qdapps.quard.model.Goal;
 import com.qdapps.quard.model.Status;
@@ -16,6 +18,7 @@ import com.qdapps.quard.model.slicer.SlicerImpl;
  */
 public class SimulationController extends Controller {
 
+	private Logger log = Logger.getLogger(SimulationController.class);
 	@Override
 	public void init() {
 		//Check every thing;
@@ -23,9 +26,8 @@ public class SimulationController extends Controller {
 		Status current = new Status();
 		
 		//set a current goal; start all motors in 15 sec;
-		Goal g = new StartUp(15000);
-		this.getMaingoal().add(g);
-	 
+		Goal g = new StartUp(5000);
+		//this.getMaingoal().add(g); //don't add this, the firs main goal should be pop out after it is sliced;
 		LinkedList<Goal> goals = g.slice (current);
 		this.getGoalList().addAll(goals);
 		
@@ -50,13 +52,16 @@ public class SimulationController extends Controller {
 		long currentTime = System.currentTimeMillis(); 
 		if (achieved || currentTime > currentGoal.getEndTime()){
 			//need a new goal as current Goal;
-			Goal nextGoal = getNextGoal();
+			//firt pop un the current goal;
+			getNextGoal();
+			Goal nextGoal = getCurrentGoal();
 			if (nextGoal == null){
 				//find next goal in goal list; if null, look at the parent list to find the next goal to achieve;
 				Goal next = this.getMaingoal().poll();
 				if (next == null){
 					//If at the end of goal list; just use this current goal; 
 					//If this happened, go to a waiting stage;
+					log.error("Can not find the next main goal..");
 					next = currentGoal.getParentGoal();
 				}
 				next.setStartTime(currentTime);
