@@ -1,21 +1,22 @@
 package com.qdapps.quard.model.controller;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
 import com.qdapps.quard.model.Command;
 import com.qdapps.quard.model.Goal;
 import com.qdapps.quard.model.Status;
-import com.qdapps.quard.model.slicer.Slicer;
 
 public abstract class Controller {
 	abstract public void init();
+	abstract public void shutdown();
 	abstract public Command nextCommand(Status status, long time);
 	//abstract public void setGoad(Goal[] g);
 	//abstract public Goal [] getRootGoal();	
 	
-	private LinkedList<Goal> maingoal = new LinkedList<>();
-	private LinkedList<Goal> goalList = new LinkedList<>();
+	private List<Goal> maingoal = Collections.synchronizedList(new LinkedList<Goal>());
+	private List<Goal> goalList = Collections.synchronizedList(new LinkedList<Goal>());
 	//private Slicer slicer; //no need for slicer anymore, the goal slic it self;
 	
 	
@@ -23,8 +24,11 @@ public abstract class Controller {
 	 * @return
 	 */
 	public Goal getCurrentGoal() {
-		Goal currentGoal = this.getGoalList().peek();
-		return currentGoal;
+		if (this.getGoalList().size()>0)
+		{
+			Goal currentGoal = this.getGoalList().get(0);
+		 	return currentGoal;
+		}else return null;
 	}
 	
 	/**
@@ -32,7 +36,7 @@ public abstract class Controller {
 	 * @return
 	 */
 	public Goal getNextGoal() {
-		Goal g = this.getGoalList().poll();
+		Goal g = this.getGoalList().remove(0);
 		return g;
 	}
 	
@@ -42,18 +46,23 @@ public abstract class Controller {
 //	public void setSlicer(Slicer slicer) {
 //		this.slicer = slicer;
 //	}
-	public LinkedList<Goal> getMaingoal() {
+	public List<Goal> getMaingoal() {
 		return maingoal;
 	}
 //	public void setMaingoal(List<Goal> maingoal) {
 //		this.maingoal = maingoal;
 //	}
-	public LinkedList<Goal> getGoalList() {
+	public List<Goal> getGoalList() {
 		return goalList;
 	}
 //	public void setGoalList(List<Goal> goalList) {
 //		this.goalList = goalList;
 //	}
+	private boolean shutdown = false;
+	public boolean getShutDown() {
+		// TODO Auto-generated method stub
+		return shutdown;
+	}
 	
 
 	

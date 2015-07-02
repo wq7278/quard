@@ -1,6 +1,10 @@
 package com.qdapps.quard.model.controller;
 
 import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
@@ -8,8 +12,7 @@ import com.qdapps.quard.model.Command;
 import com.qdapps.quard.model.Goal;
 import com.qdapps.quard.model.Status;
 import com.qdapps.quard.model.goal.StartUp;
-import com.qdapps.quard.model.slicer.Slicer;
-import com.qdapps.quard.model.slicer.SlicerImpl;
+import com.qdapps.quard.model.goal.TakeOff;
 
 /**
  * This is run in the sofware simulated evn;
@@ -19,11 +22,23 @@ import com.qdapps.quard.model.slicer.SlicerImpl;
 public class SimulationController extends Controller {
 
 	private Logger log = Logger.getLogger(SimulationController.class);
+	
+	private ExecutorService executor;
+	private final int NTHREDS = 2;
+	
 	@Override
 	public void init() {
-		//Check every thing;
-		//Get current status;
+		
+		//start the goal listening thread; 
+		this.executor  = Executors.newFixedThreadPool(NTHREDS);
+	    Runnable worker = new TestCommandFetcher(this);
+	    executor.execute(worker);
+	    // This will make the executor accept no new threads
+	    // and finish all existing threads in the queue
+	    executor.shutdown();
+	    //Get current status;
 		Status current = new Status();
+		
 		
 		//set a current goal; start all motors in 15 sec;
 		Goal g = new StartUp(5000);
@@ -31,6 +46,9 @@ public class SimulationController extends Controller {
 		LinkedList<Goal> goals = g.slice (current);
 		this.getGoalList().addAll(goals);
 		
+		List<Goal> gs = new LinkedList<>();
+		gs.add(new TakeOff(0.2f, 2000, 0));
+		gs.add(new Hover(2000));
 	}
 
 	@Override
@@ -57,7 +75,10 @@ public class SimulationController extends Controller {
 			Goal nextGoal = getCurrentGoal();
 			if (nextGoal == null){
 				//find next goal in goal list; if null, look at the parent list to find the next goal to achieve;
-				Goal next = this.getMaingoal().poll();
+				Goal next = null;
+				if (this.getMaingoal().size()>0){
+					next= this.getMaingoal().remove(0);
+				}
 				if (next == null){
 					//If at the end of goal list; just use this current goal; 
 					//If this happened, go to a waiting stage;
@@ -75,6 +96,19 @@ public class SimulationController extends Controller {
 		//Generate the command should be run;
 		cmd = currentGoal.gnerateCommand(status);
 		return cmd;
+	}
+
+	@Override
+	public void shutdown()  {
+		// Wait until all threads are finish
+		try {
+	    executor.awaitTermination(5, TimeUnit.SECONDS);
+		}catch(Exception e ){
+			e.printStackTrace();
+			log.error (e.getMessage());
+		}
+	    log.info("Finished all threads");
+		
 	}
 
 }
