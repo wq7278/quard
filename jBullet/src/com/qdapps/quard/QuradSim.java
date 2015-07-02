@@ -151,7 +151,7 @@ public class QuradSim extends DemoApplication {
 		dynamicsWorld = new DiscreteDynamicsWorld(dispatcher, broadphase,
 				solver, collisionConfiguration);
 
-		dynamicsWorld.setGravity(new Vector3f(0f, -10f, 0f));
+		dynamicsWorld.setGravity(new Vector3f(0f, -9.8f, 0f));
 
 		// create a few basic rigid bodies
 		CollisionShape groundShape = new BoxShape(new Vector3f(5f, 5f, 5f));

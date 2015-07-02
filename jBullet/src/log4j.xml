@@ -12,7 +12,7 @@
 	</appender>
 	
 	<logger name="com.qdapps">
-		<level value="INFO"/>
+		<level value="DEBUG"/>
 		<appender-ref ref="DEFAULT"/>
 	</logger>
 </log4j:configuration>

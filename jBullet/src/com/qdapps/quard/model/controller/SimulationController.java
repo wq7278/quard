@@ -48,7 +48,7 @@ public class SimulationController extends Controller {
 		
 		List<Goal> gs = new LinkedList<>();
 		gs.add(new TakeOff(0.2f, 2000, 0));
-		gs.add(new Hover(2000));
+		//gs.add(new Hover(2000));
 	}
 
 	@Override
