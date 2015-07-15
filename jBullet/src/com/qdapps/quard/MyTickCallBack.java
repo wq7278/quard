@@ -104,15 +104,19 @@ public class MyTickCallBack extends InternalTickCallback {
 
 	}
 
-	private double T = 1; // in 3 seconds.
-	private double S = 4; // reachs 10 m;
+	private double T = 2; // in 3 seconds.
+	private double S = 1.5; // reachs 10 m;
 
 	private void calculate2(float[] scale, RigidBody quard, float timeStep) {
 		double factor = 1;
 		double x = totalTime;
 		if (totalTime <= T) {
-			double dt = x / T * Math.PI * 2;
-			double sFactor = S / (Math.PI * 2);
+			
+			double aFactor = 1/ T * Math.PI * 2;
+			
+			double dt = x * aFactor;
+			double sFactor = S * aFactor /T;
+			
 			double a = sFactor * Math.sin(dt);
 			double mass = quard.getInvMass();
 			double totalF = mass * a;
